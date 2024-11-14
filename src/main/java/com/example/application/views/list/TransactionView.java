@@ -46,11 +46,12 @@ public class TransactionView extends VerticalLayout implements HasUrlParameter<S
     }
 
     private void createTransactionLayout() {
-        removeAll(); // Vorherigen Inhalt löschen, falls vorhanden
+        removeAll();
 
-        // Buttons für Transaktionsoptionen
-        Button withdrawButton = new Button("Geld abheben", event -> openTransactionDeposit("Abheben", false));
-        Button depositButton = new Button("Geld einzahlen", event -> openTransactionWithdraw("Einzahlen", true));
+        Notification.show("Aktueller Kontostand: " + account.getBalance() + " CHF");
+
+        Button withdrawButton = new Button("Geld abheben", event -> openTransactionDialog("Abheben", false));
+        Button depositButton = new Button("Geld einzahlen", event -> openTransactionDialog("Einzahlen", true));
         Button transferButton = new Button("Geld überweisen", event -> openTransferDialog());
         Button overviewButton = new Button("Zurück zur Übersicht", event -> {
             getUI().ifPresent(ui -> ui.navigate("user/" + user.getName()));
@@ -60,40 +61,26 @@ public class TransactionView extends VerticalLayout implements HasUrlParameter<S
         add(withdrawButton, depositButton, transferButton, overviewButton);
     }
 
-    private void openTransactionDeposit(String action, boolean isDeposit) {
+    private void openTransactionDialog(String action, boolean isDeposit) {
         Dialog dialog = new Dialog();
         NumberField amountField = new NumberField("Betrag");
         Button confirmButton = new Button("Bestätigen", event -> {
             double amount = amountField.getValue();
-            if (isDeposit) {
-                account.deposit(amount);
-                Notification.show("Betrag eingezahlt.");
-            } else if (isWithdraw) {
-                account.withdraw(amount);
-                Notification.show("Nicht genügend Guthaben.");
-            }
-            dialog.close();
-        });
-        dialog.add(amountField, confirmButton);
-        dialog.open();
-    }
 
-    private void openTransactionWithdraw(String action, boolean isWithdraw) {
-        Dialog dialog = new Dialog();
-        NumberField amountField = new NumberField("Betrag");
-        Button confirmButton = new Button("Bestätigen", event -> {
-            double amount = amountField.getValue();
             if (isDeposit) {
                 account.deposit(amount);
-                Notification.show("Betrag eingezahlt.");
-            } else if (isWithdraw) {
-                account.withdraw(amount);
-                Notification.show("Nicht genügend Guthaben.");
+                Notification.show("Betrag eingezahlt");
             } else {
-                Notification.show("Betrag abgehoben.");
+                if (account.withdraw(amount)) {
+                    Notification.show("Betrag abgehoben");
+                } else {
+                    Notification.show("Nicht genügend Guthaben.");
+                }
             }
+            Notification.show("Neuer Kontostand: " + account.getBalance() + " CHF");
             dialog.close();
         });
+        
         dialog.add(amountField, confirmButton);
         dialog.open();
     }
