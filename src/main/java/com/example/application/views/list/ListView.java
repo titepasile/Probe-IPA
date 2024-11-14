@@ -1,33 +1,29 @@
 package com.example.application.views.list;
 
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 
-@PageTitle("list")
+import com.example.application.views.ownClass.AppUser;
+
+import java.util.ArrayList;
+import java.util.List;
+
 @Route("")
 public class ListView extends VerticalLayout {
 
+    private List<AppUser> users = new ArrayList<>();
+
     public ListView() {
-        setSpacing(false);
+        // Benutzerliste mit Beispieldaten initialisieren
+        users.add(new AppUser("Alice"));
+        users.add(new AppUser("Bob"));
+        users.add(new AppUser("Charlie"));
 
-        Image img = new Image("images/empty-plant.png", "placeholder plant");
-        img.setWidth("200px");
-        add(img);
-
-        H2 header = new H2("This place intentionally left empty");
-        header.addClassNames(Margin.Top.XLARGE, Margin.Bottom.MEDIUM);
-        add(header);
-        add(new Paragraph("It’s a place where you can grow your own UI 🤗"));
-
-        setSizeFull();
-        setJustifyContentMode(JustifyContentMode.CENTER);
-        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-        getStyle().set("text-align", "center");
+        // Benutzer-Buttons erstellen
+        for (AppUser user : users) {
+            Button userButton = new Button(user.getName(), event -> getUI().ifPresent(ui -> ui.navigate("user/" + user.getName())));
+            add(userButton);
+        }
     }
-
 }
