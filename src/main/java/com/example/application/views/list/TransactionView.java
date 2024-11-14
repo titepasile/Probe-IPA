@@ -51,7 +51,7 @@ public class TransactionView extends VerticalLayout implements HasUrlParameter<S
         // Buttons für Transaktionsoptionen
         Button withdrawButton = new Button("Geld abheben", event -> openTransactionDialog("Abheben", false));
         Button depositButton = new Button("Geld einzahlen", event -> openTransactionDialog("Einzahlen", true));
-        //Button transferButton = new Button("Geld überweisen", event -> openTransferDialog());
+        Button transferButton = new Button("Geld überweisen", event -> openTransferDialog());
         Button overviewButton = new Button("Zurück zur Übersicht", event -> {
             getUI().ifPresent(ui -> ui.navigate("user/" + user.getName()));
         });
@@ -78,7 +78,7 @@ public class TransactionView extends VerticalLayout implements HasUrlParameter<S
         dialog.add(amountField, confirmButton);
         dialog.open();
     }
-/*
+
     private void openTransferDialog() {
         Dialog dialog = new Dialog();
         TextField ibanField = new TextField("IBAN");
@@ -100,5 +100,4 @@ public class TransactionView extends VerticalLayout implements HasUrlParameter<S
         dialog.add(ibanField, amountField, confirmButton);
         dialog.open();
     }
-        */
 }
