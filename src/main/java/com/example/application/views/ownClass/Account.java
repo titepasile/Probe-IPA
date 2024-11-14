@@ -4,11 +4,11 @@ public class Account {
     private double balance;
 
     public Account() {
-        this.balance = 1000;
+        this.balance = 0;
     }
 
-    public double getBalance() {
-        return balance;
+    public double getBalance(double balance, double amount) {
+        return balance += amount;
     }
 
     public double deposit(double amount) {
