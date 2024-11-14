@@ -7,8 +7,8 @@ public class Account {
         this.balance = 0;
     }
 
-    public double getBalance(double balance, double amount) {
-        return balance += amount;
+    public double getBalance() {
+        return balance;
     }
 
     public double deposit(double amount) {
@@ -18,11 +18,12 @@ public class Account {
         return balance; 
     }
 
-    public double withdraw(double amount) {
-        if (amount > 0) {
+    public boolean withdraw(double amount) {
+        if (amount > 0 && amount <= balance) { 
             this.balance -= amount;
+            return true;
         }
-        return balance;
+        return false;
     }
 
     public boolean transfer(double amount, String iban) {
