@@ -1,25 +1,43 @@
 package com.example.application.views.ownClass;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+
+@Entity
 public class Account {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private double balance;
 
-    public Account() {
-        this.balance = 0;
+    @ManyToOne
+    @JoinColumn(name = "account")
+    private AppUser user;
+
+    public Account(double initialBalance) {
+        this.balance = initialBalance;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public double getBalance() {
         return balance;
     }
 
-    public double deposit(double amount) {
-        if (amount > 0) {
-            this.balance += amount;
-        }
-        return balance; 
+    public void deposit(double amount) {
+        this.balance += amount;
     }
 
     public boolean withdraw(double amount) {
-        if (amount > 0 && amount <= balance) { 
+        if (amount <= balance) {
             this.balance -= amount;
             return true;
         }
@@ -27,14 +45,18 @@ public class Account {
     }
 
     public boolean transfer(double amount, String iban) {
-        if (amount > 0 && amount <= this.balance && isValidIban(iban)) {
+        if (amount <= balance) {
             this.balance -= amount;
             return true;
         }
         return false;
     }
 
-    private boolean isValidIban(String iban) {
-        return iban.startsWith("CH") && iban.length() == 23;
+    public AppUser getUser() {
+        return user;
+    }
+
+    public void setUser(AppUser user) {
+        this.user = user;
     }
 }

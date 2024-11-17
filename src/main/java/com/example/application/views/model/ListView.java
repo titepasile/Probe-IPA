@@ -1,4 +1,4 @@
-package com.example.application.views.list;
+package com.example.application.views.model;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -15,14 +15,8 @@ public class ListView extends VerticalLayout {
     private List<AppUser> users = new ArrayList<>();
 
     public ListView() {
-        // Benutzerliste mit Beispieldaten initialisieren
-        users.add(new AppUser("Alice"));
-        users.add(new AppUser("Bob"));
-        users.add(new AppUser("Charlie"));
-
-        // Benutzer-Buttons erstellen
         for (AppUser user : users) {
-            Button userButton = new Button(user.getName(), event -> getUI().ifPresent(ui -> ui.navigate("user/" + user.getName())));
+            Button userButton = new Button(user.getNames(), event -> getUI().ifPresent(ui -> ui.navigate("user/" + user.getNames())));
             add(userButton);
         }
     }
