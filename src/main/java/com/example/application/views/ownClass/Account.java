@@ -1,40 +1,80 @@
 package com.example.application.views.ownClass;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+
+@Entity
 public class Account {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private double balance;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private AppUser appUser;
+
+    // Konstruktoren
     public Account() {
-        this.balance = 0;
+    }
+
+    public Account(double balance) {
+        this.balance = balance;
+    }
+
+    // Getter und Setter
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public double getBalance() {
         return balance;
     }
 
-    public double deposit(double amount) {
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
+    public AppUser getUser() {
+        return appUser;
+    }
+
+    public void setUser(AppUser user) {
+        this.appUser = user;
+    }
+
+    // Einzahlen
+    public void deposit(double amount) {
         if (amount > 0) {
             this.balance += amount;
         }
-        return balance; 
     }
 
+    // Abheben
     public boolean withdraw(double amount) {
-        if (amount > 0 && amount <= balance) { 
+        if (amount > 0 && this.balance >= amount) {
             this.balance -= amount;
             return true;
         }
         return false;
     }
 
-    public boolean transfer(double amount, String iban) {
-        if (amount > 0 && amount <= this.balance && isValidIban(iban)) {
-            this.balance -= amount;
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isValidIban(String iban) {
-        return iban.startsWith("CH") && iban.length() == 23;
+    @Override
+    public String toString() {
+        return "Account{" +
+                "id=" + id +
+                ", balance=" + balance +
+                ", user=" + (appUser != null ? appUser.getNames() : null) +
+                '}';
     }
 }
