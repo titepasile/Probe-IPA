@@ -27,7 +27,10 @@ public class MainView extends VerticalLayout {
         } else {
             for (AppUser user : users) {
                 Button userButton = new Button(user.getNames(), event -> {
+                    // From:
+                    // https://vaadin.com/forum/t/ui-navigate-not-work-outside-of-an-event-handler-vaadin-14-2-1/160423
                     UI.getCurrent().navigate("/user/" + user.getNames());
+                    //
                 });
                 add(userButton);
             }

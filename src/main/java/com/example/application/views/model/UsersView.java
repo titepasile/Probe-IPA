@@ -3,8 +3,6 @@ package com.example.application.views.model;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.example.application.views.ownClass.Account;
 import com.example.application.views.ownClass.AppUser;
 import com.example.application.views.repositorys.AccountRepository;
@@ -33,7 +31,6 @@ public class UsersView extends VerticalLayout implements HasUrlParameter<String>
 
     @Override
     public void setParameter(BeforeEvent event, String username) {
-        // Benutzer anhand des Namens laden
         Optional<AppUser> userOptional = appUserRepository.findByName(username);
 
         if (userOptional.isPresent()) {
@@ -45,20 +42,16 @@ public class UsersView extends VerticalLayout implements HasUrlParameter<String>
     }
 
     private void createUserAccountLayout(AppUser user) {
-        // Benutzername anzeigen
         add(new H3("Benutzer: " + user.getNames()));
 
-        // Konten für diesen Benutzer abrufen
         List<Account> accounts = accountRepository.findByAppUser(user);
 
         if (accounts.isEmpty()) {
             add(new Span("Keine Konten für diesen Benutzer gefunden."));
         } else {
             for (Account account : accounts) {
-                // Button für jedes Konto erstellen
-                Button accountButton = new Button(account.getBalance() + " CHF", event -> 
-                    UI.getCurrent().navigate("transaction/" + user.getNames())
-                );
+                Button accountButton = new Button(account.getBalance() + " CHF",
+                        event -> UI.getCurrent().navigate("/transaction/" + user.getNames()));
                 add(accountButton);
             }
         }
