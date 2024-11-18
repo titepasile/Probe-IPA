@@ -6,6 +6,7 @@ import com.example.application.views.repositorys.AccountRepository;
 import com.example.application.views.repositorys.AppUserRepository;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
@@ -54,7 +55,7 @@ public class TransactionView extends VerticalLayout implements HasUrlParameter<S
         } else {
             for (Account account : accounts) {
                 Button accountButton = new Button(
-                        "Konto: " + account.getId() + "| " + account.getBalance() + " CHF",
+                        "Konto: " + account.getBalance() + " CHF",
                         click -> openTransactionDialog(account));
                 add(accountButton);
             }
@@ -67,49 +68,113 @@ public class TransactionView extends VerticalLayout implements HasUrlParameter<S
 
     private void openTransactionDialog(Account account) {
         Dialog dialog = new Dialog();
-        NumberField amountField = new NumberField("Betrag");
 
-        Button depositButton = new Button("Einzahlen", click -> {
-            double amount = amountField.getValue();
+    VerticalLayout transactionLayout = new VerticalLayout();
+    
+    Button depositButton = new Button("Einzahlen", click -> {
+        openDepositDialog(dialog, account);
+    });
 
-            if (amount <= 0) {
-                Notification.show("Geben Sie eine Zahl über 0 an.");
-                return;
-            }
-            account.deposit(amount);
+    Button withdrawButton = new Button("Abheben", click -> {
+        openWithdrawDialog(dialog, account);
+    });
+
+    Button transferButton = new Button("Überweisen", click -> {
+        openTransferDialog(dialog, account);
+    });
+
+    transactionLayout.add(depositButton, withdrawButton, transferButton);
+    dialog.add(transactionLayout);
+    dialog.open();
+}
+
+private void openDepositDialog(Dialog dialog, Account account) {
+    NumberField amountField = new NumberField("Betrag");
+    Button confirmButton = new Button("Bestätigen", event -> {
+        double amount = amountField.getValue();
+
+        if (amount <= 0) {
+            Notification.show("Geben Sie einen grösseren Betrag als 0 an.");
+            return;
+        }
+
+        account.deposit(amount);
+        accountRepository.save(account);
+        Notification.show("Betrag eingezahlt: " + amount + " CHF. Neuer Kontostand: " + account.getBalance() + " CHF.");
+        dialog.close();
+    });
+
+    dialog.removeAll();
+    dialog.add(amountField, confirmButton);
+}
+
+private void openWithdrawDialog(Dialog dialog, Account account) {
+    NumberField amountField = new NumberField("Betrag");
+    Button confirmButton = new Button("Bestätigen", event -> {
+        double amount = amountField.getValue();
+
+        if (amount <= 0) {
+            Notification.show("Geben Sie einen grösseren Betrag als 0 an.");
+            return;
+        } else if (amount > account.getBalance()) {
+            Notification.show("Sie haben nicht genügend Guthaben.");
+            return;
+        }
+
+        account.withdraw(amount);
+        accountRepository.save(account);
+        Notification.show("Betrag abgehoben: " + amount + " CHF. Neuer Kontostand: " + account.getBalance() + " CHF.");
+        dialog.close();
+    });
+
+    dialog.removeAll();
+    dialog.add(amountField, confirmButton);
+}
+
+private void openTransferDialog(Dialog dialog, Account account) {
+    ComboBox<AppUser> userDropdown = new ComboBox<>("Empfänger auswählen");
+    userDropdown.setItems(appUserRepository.findAll());
+    userDropdown.setItemLabelGenerator(AppUser::getNames);
+
+    NumberField amountField = new NumberField("Betrag");
+    Button confirmButton = new Button("Bestätigen", event -> {
+        double amount = amountField.getValue();
+
+        if (amount <= 0) {
+            Notification.show("Geben Sie einen grösseren Betrag als 0 an.");
+            return;
+        } else if (amount > account.getBalance()) {
+            Notification.show("Sie haben nicht genügend Guthaben.");
+            return;
+        }
+
+        AppUser selectedUser = userDropdown.getValue();
+        if (selectedUser == null) {
+            Notification.show("Bitte wählen Sie einen Empfänger aus.");
+            return;
+        }
+
+        List<Account> recipientAccounts = accountRepository.findByAppUser(selectedUser);
+        if (recipientAccounts.isEmpty()) {
+            Notification.show("Der Empfänger hat kein Konto.");
+            return;
+        }
+
+        Account recipientAccount = recipientAccounts.get(0);
+
+        boolean success = account.transfer(recipientAccount, amount);
+        if (success) {
             accountRepository.save(account);
-            Notification
-                    .show("Betrag eingezahlt: " + amount + " CHF. Neuer Kontostand: " + account.getBalance() + " CHF.");
-            dialog.close();
+            accountRepository.save(recipientAccount);
+            Notification.show("Überweisung erfolgreich: " + amount + " CHF an " + selectedUser.getNames());
+        } else {
+            Notification.show("Überweisung fehlgeschlagen.");
+        }
 
-            appUserRepository.save(user);
-            Notification.show("Aktueller Kontostand: " + account.getBalance() + " CHF");
-            dialog.close();
-        });
+        dialog.close();
+    });
 
-        Button withdrawButton = new Button("Abheben", click -> {
-            double amount = amountField.getValue();
-
-            if (amount <= 0) {
-                Notification.show("Geben Sie eine Zahl über 0 an.");
-                return;
-            } else if (amount >= account.getBalance()) {
-                Notification.show("Ihr Guthaben ist zu klein.");
-                return;
-            }
-
-            account.deposit(amount);
-            accountRepository.save(account);
-            Notification
-                    .show("Betrag eingezahlt: " + amount + " CHF. Neuer Kontostand: " + account.getBalance() + " CHF.");
-            dialog.close();
-
-            appUserRepository.save(user);
-            Notification.show("Aktueller Kontostand: " + account.getBalance() + " CHF");
-            dialog.close();
-        });
-
-        dialog.add(amountField, withdrawButton, depositButton);
-        dialog.open();
+    dialog.removeAll();
+    dialog.add(userDropdown, amountField, confirmButton);
     }
 }

@@ -9,8 +9,10 @@ import com.example.application.views.repositorys.AccountRepository;
 import com.example.application.views.repositorys.AppUserRepository;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -43,6 +45,7 @@ public class UsersView extends VerticalLayout implements HasUrlParameter<String>
 
     private void createUserAccountLayout(AppUser user) {
         add(new H3("Benutzer: " + user.getNames()));
+        //add(new H4("Gesammtguthaben: " + ""));
 
         List<Account> accounts = accountRepository.findByAppUser(user);
 
@@ -55,5 +58,31 @@ public class UsersView extends VerticalLayout implements HasUrlParameter<String>
                 add(accountButton);
             }
         }
+
+        Button createAccountButton = new Button("Neues Konto erstellen", click -> createNewAccountForUser(user));
+        add(createAccountButton);
+    }
+
+    private void createNewAccountForUser(AppUser user) {
+        Dialog dialog = new Dialog();
+        dialog.setWidth("300px");
+
+        Button createButton = new Button("Konto erstellen", event -> {
+            Account newAccount = new Account();
+            newAccount.setUser(user);
+
+            accountRepository.save(newAccount);
+            Notification.show("Neues Konto für " + user.getNames() + " wurde erfolgreich erstellt.");
+
+            dialog.close();
+
+            removeAll();
+            createUserAccountLayout(user);
+        });
+
+        Button closeButton = new Button("Abbrechen", event -> dialog.close());
+
+        dialog.add(createButton, closeButton);
+        dialog.open();
     }
 }

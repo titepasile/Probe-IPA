@@ -69,6 +69,16 @@ public class Account {
         return false;
     }
 
+    // Überweisung
+    public boolean transfer(Account recipientAccount, double amount) {
+        if (amount > 0 && this.balance >= amount && recipientAccount != null) {
+            this.balance -= amount;
+            recipientAccount.deposit(amount);
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public String toString() {
         return "Account{" +
