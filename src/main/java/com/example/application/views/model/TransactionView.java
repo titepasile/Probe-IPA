@@ -14,25 +14,32 @@ import com.vaadin.flow.router.Route;
 
 import java.util.Optional;
 
-@Route("transaction")
+@Route("/transaction")
 public class TransactionView extends VerticalLayout implements HasUrlParameter<String> {
 
     private AppUserRepository userRepository;
     private Account account;
     private AppUser user;
 
-    
     public TransactionView(AppUserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
     @Override
-    public void setParameter(BeforeEvent event, String username) {
-        Optional<AppUser> userOptional = userRepository.findByName(username);
+    public void setParameter(BeforeEvent event, String name) {
+        if (name == null || name.isEmpty()) {
+            Notification.show("Kein Benutzername angegeben.");
+            return;
+        }
+
+        Optional<AppUser> userOptional = userRepository.findByName(name);
         if (userOptional.isPresent()) {
             user = userOptional.get();
-            account = user.getAccounts().get(0); // Nimmt an, dass der Benutzer ein Konto hat
-            createTransactionLayout();
+            if (!user.getAccounts().isEmpty()) {
+                createTransactionLayout();
+            } else {
+                Notification.show("Kein Konto für diesen Benutzer gefunden.");
+            }
         } else {
             Notification.show("Benutzer nicht gefunden.");
         }
@@ -43,7 +50,8 @@ public class TransactionView extends VerticalLayout implements HasUrlParameter<S
 
         Button withdrawButton = new Button("Geld abheben", click -> openTransactionDialog("Abheben", false));
         Button depositButton = new Button("Geld einzahlen", click -> openTransactionDialog("Einzahlen", true));
-        Button overviewButton = new Button("Zurück zur Übersicht", click -> getUI().ifPresent(ui -> ui.navigate("user/" + user.getNames())));
+        Button overviewButton = new Button("Zurück zur Übersicht",
+                click -> getUI().ifPresent(ui -> ui.navigate("/user")));
 
         add(withdrawButton, depositButton, overviewButton);
     }

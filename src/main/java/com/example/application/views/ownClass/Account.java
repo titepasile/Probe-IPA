@@ -17,46 +17,64 @@ public class Account {
     private double balance;
 
     @ManyToOne
-    @JoinColumn(name = "account")
-    private AppUser user;
+    @JoinColumn(name = "user_id", nullable = false)
+    private AppUser appUser;
 
-    public Account(double initialBalance) {
-        this.balance = initialBalance;
+    // Konstruktoren
+    public Account() {
     }
 
+    public Account(double balance) {
+        this.balance = balance;
+    }
+
+    // Getter und Setter
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public double getBalance() {
         return balance;
     }
 
-    public void deposit(double amount) {
-        this.balance += amount;
-    }
-
-    public boolean withdraw(double amount) {
-        if (amount <= balance) {
-            this.balance -= amount;
-            return true;
-        }
-        return false;
-    }
-
-    public boolean transfer(double amount, String iban) {
-        if (amount <= balance) {
-            this.balance -= amount;
-            return true;
-        }
-        return false;
+    public void setBalance(double balance) {
+        this.balance = balance;
     }
 
     public AppUser getUser() {
-        return user;
+        return appUser;
     }
 
     public void setUser(AppUser user) {
-        this.user = user;
+        this.appUser = user;
+    }
+
+    // Einzahlen
+    public void deposit(double amount) {
+        if (amount > 0) {
+            this.balance += amount;
+        }
+    }
+
+    // Abheben
+    public boolean withdraw(double amount) {
+        if (amount > 0 && this.balance >= amount) {
+            this.balance -= amount;
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "Account{" +
+                "id=" + id +
+                ", balance=" + balance +
+                ", user=" + (appUser != null ? appUser.getNames() : null) +
+                '}';
     }
 }
